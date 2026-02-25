@@ -1,0 +1,11 @@
+INSERT INTO violations VALUES (1001, 'GZH7067', 'NY', DATE '2016-07-10', 40, 'TOYOTA', 115.00, 'Manhattan', 'OPEN');
+INSERT INTO violations VALUES (1002, 'FZX9232', 'NY', DATE '2016-08-23', 21, 'FORD', 65.00, 'Brooklyn', 'OPEN');
+INSERT INTO violations VALUES (1003, 'ABC1234', 'NJ', DATE '2016-09-15', 20, 'HONDA', 65.00, 'Queens', 'OPEN');
+INSERT INTO violations VALUES (1004, 'XYZ9999', 'NY', DATE '2016-10-01', 46, 'BMW', 115.00, 'Manhattan', 'OPEN');
+INSERT INTO violations VALUES (1005, 'DEF5678', 'PA', DATE '2016-11-20', 40, 'TOYOTA', 115.00, 'Bronx', 'OPEN');
+INSERT INTO violations VALUES (1006, 'GHI4321', 'NY', DATE '2016-12-05', 71, 'HONDA', 65.00, 'Brooklyn', 'OPEN');
+INSERT INTO violations VALUES (1007, 'GZH7067', 'NY', DATE '2017-01-15', 21, 'TOYOTA', 65.00, 'Manhattan', 'OPEN');
+INSERT INTO violations VALUES (1008, 'JKL8765', 'CT', DATE '2017-02-10', 40, 'FORD', 115.00, 'Queens', 'OPEN');
+INSERT INTO violations VALUES (1009, 'MNO2468', 'NY', DATE '2017-03-22', 20, 'CHEVY', 65.00, 'Bronx', 'OPEN');
+INSERT INTO violations VALUES (1010, 'GZH7067', 'NY', DATE '2017-04-30', 46, 'TOYOTA', 115.00, 'Manhattan', 'OPEN');
+COMMIT;

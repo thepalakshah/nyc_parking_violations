@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYC Parking Violations Monitoring System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d1117; color: #c9d1d9; }
+
+  header {
+    background: #161b22;
+    padding: 28px 40px;
+    border-bottom: 1px solid #30363d;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 600; color: #e6edf3; }
+  header p { color: #8b949e; font-size: 0.82rem; margin-top: 5px; }
+  .badges { margin-top: 10px; }
+  .badge {
+    display: inline-block;
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #58a6ff;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    margin-right: 6px;
+  }
+
+  nav {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 0 40px;
+    display: flex;
+  }
+  nav a {
+    display: block;
+    padding: 12px 18px;
+    font-size: 0.8rem;
+    color: #8b949e;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+  nav a:hover { color: #58a6ff; border-bottom-color: #58a6ff; }
+
+  .container { max-width: 1300px; margin: 0 auto; padding: 28px; }
+
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #58a6ff;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+
+  /* KPI */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .kpi {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 18px;
+    border-top: 2px solid #58a6ff;
+  }
+  .kpi.red { border-top-color: #f85149; }
+  .kpi.green { border-top-color: #3fb950; }
+  .kpi.orange { border-top-color: #d29922; }
+  .kpi .number { font-size: 1.6rem; font-weight: 700; color: #e6edf3; }
+  .kpi .label { font-size: 0.7rem; color: #8b949e; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Alert */
+  .alert {
+    background: #1c1f0a;
+    border: 1px solid #d29922;
+    border-left: 3px solid #d29922;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    color: #e3b341;
+    margin-bottom: 24px;
+  }
+
+  /* Charts */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 22px;
+  }
+  .card h3 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin-bottom: 18px;
+  }
+
+  .bar-item { margin-bottom: 13px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px; color: #c9d1d9; }
+  .bar-label span:last-child { color: #e6edf3; font-weight: 600; }
+  .bar-track { background: #21262d; border-radius: 2px; height: 7px; }
+  .bar-fill { height: 7px; border-radius: 2px; background: #58a6ff; }
+  .bar-fill.red { background: #f85149; }
+  .bar-fill.green { background: #3fb950; }
+  .bar-fill.orange { background: #d29922; }
+  .bar-fill.purple { background: #bc8cff; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { padding: 9px 12px; text-align: left; font-size: 0.7rem; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #30363d; }
+  td { padding: 9px 12px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #1c2128; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; }
+  .tag.high { background: #3d1a1a; color: #f85149; }
+  .tag.med { background: #2d2208; color: #d29922; }
+  .tag.low { background: #122119; color: #3fb950; }
+
+  /* Architecture */
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+  .arch-box {
+    background: #0d1117;
+    border: 1px solid #58a6ff;
+    border-radius: 6px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .arch-box .arch-title { font-size: 0.8rem; font-weight: 700; color: #e6edf3; }
+  .arch-box .arch-sub { font-size: 0.68rem; color: #8b949e; margin-top: 3px; }
+  .arch-arrow { color: #58a6ff; font-size: 1.3rem; padding: 0 12px; }
+  .arch-note { text-align: center; font-size: 0.75rem; color: #8b949e; margin-top: 10px; }
+
+  /* Tech */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .tech-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 2px solid #58a6ff;
+  }
+  .tech-card.oracle { border-left-color: #f85149; }
+  .tech-card.python { border-left-color: #3fb950; }
+  .tech-card.terraform { border-left-color: #bc8cff; }
+  .tech-card.cloudwatch { border-left-color: #d29922; }
+  .tech-name { font-size: 0.82rem; font-weight: 700; color: #e6edf3; }
+  .tech-desc { font-size: 0.72rem; color: #8b949e; margin-top: 5px; line-height: 1.5; }
+
+  footer {
+    background: #161b22;
+    border-top: 1px solid #30363d;
+    text-align: center;
+    padding: 20px;
+    font-size: 0.75rem;
+    color: #8b949e;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NYC Parking Violations Monitoring System</h1>
+  <p>Cloud Operations Dashboard — Fiscal Year 2017 — Real NYC Open Data (Kaggle)</p>
+  <div class="badges">
+    <span class="badge">AWS RDS MySQL</span>
+    <span class="badge">EC2</span>
+    <span class="badge">S3</span>
+    <span class="badge">Terraform IaC</span>
+    <span class="badge">Oracle PL/SQL</span>
+    <span class="badge">Python</span>
+    <span class="badge">CloudWatch</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#analysis">Data Analysis</a>
+  <a href="#architecture">Architecture</a>
+</nav>
+
+<div class="container">
+
+  <!-- OVERVIEW -->
+  <div id="overview" style="margin-bottom:28px">
+    <div class="section-title">Key Metrics</div>
+
+    <div class="alert">
+      UNPAID VIOLATIONS ALERT — 76,164 open violations across all NYC boroughs totaling $4.4M in uncollected fines. Manhattan leads with $1.9M outstanding.
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="number">78,164</div>
+        <div class="label">Total Violations</div>
+      </div>
+      <div class="kpi green">
+        <div class="number">2,000</div>
+        <div class="label">Payments Processed</div>
+      </div>
+      <div class="kpi red">
+        <div class="number">76,164</div>
+        <div class="label">Unpaid Tickets</div>
+      </div>
+      <div class="kpi orange">
+        <div class="number">$4.5M</div>
+        <div class="label">Total Fines</div>
+      </div>
+      <div class="kpi">
+        <div class="number">82</div>
+        <div class="label">Violation Types</div>
+      </div>
+      <div class="kpi">
+        <div class="number">95</div>
+        <div class="label">Precincts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA ANALYSIS -->
+  <div id="analysis" style="margin-bottom:28px">
+    <div class="section-title">Data Analysis Results</div>
+
+    <div class="charts-grid">
+
+      <div class="card">
+        <h3>Tickets by Borough</h3>
+        <div class="bar-item">
+          <div class="bar-label"><span>Manhattan</span><span>30,948</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Queens</span><span>12,395</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:40%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Brooklyn</span><span>7,917</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:26%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Bronx</span><span>7,435</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:24%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Staten Island</span><span>1,139</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:4%"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Revenue by Borough</h3>
+        <div class="bar-item">
+          <div class="bar-label"><span>Manhattan</span><span>$1,906,900</span></div>
+          <div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Queens</span><span>$685,885</span></div>
+          <div class="bar-track"><div class="bar-fill green" style="width:36%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Brooklyn</span><span>$460,565</span></div>
+          <div class="bar-track"><div class="bar-fill green" style="width:24%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Bronx</span><span>$413,775</span></div>
+          <div class="bar-track"><div class="bar-fill green" style="width:22%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Staten Island</span><span>$60,005</span></div>
+          <div class="bar-track"><div class="bar-fill green" style="width:3%"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Top Violation Types</h3>
+        <div class="bar-item">
+          <div class="bar-label"><span>School Zone Speed Violation</span><span>25,736</span></div>
+          <div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Failure to Display Receipt</span><span>9,565</span></div>
+          <div class="bar-track"><div class="bar-fill red" style="width:37%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>No Standing</span><span>8,117</span></div>
+          <div class="bar-track"><div class="bar-fill red" style="width:32%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Expired Muni Meter</span><span>5,436</span></div>
+          <div class="bar-track"><div class="bar-fill red" style="width:21%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Double Parking</span><span>5,229</span></div>
+          <div class="bar-track"><div class="bar-fill red" style="width:20%"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Top Car Brands Ticketed</h3>
+        <div class="bar-item">
+          <div class="bar-label"><span>Toyota</span><span>9,842</span></div>
+          <div class="bar-track"><div class="bar-fill orange" style="width:100%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Honda</span><span>8,231</span></div>
+          <div class="bar-track"><div class="bar-fill orange" style="width:84%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Ford</span><span>7,156</span></div>
+          <div class="bar-track"><div class="bar-fill orange" style="width:73%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Nissan</span><span>6,489</span></div>
+          <div class="bar-track"><div class="bar-fill orange" style="width:66%"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Chevrolet</span><span>4,102</span></div>
+          <div class="bar-track"><div class="bar-fill orange" style="width:42%"></div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tables Row -->
+    <div class="charts-grid">
+
+      <div class="card">
+        <h3>Top States by Violations</h3>
+        <table>
+          <thead>
+            <tr><th>State</th><th>Tickets</th><th>Share</th><th>Level</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>New York (NY)</td><td>82,993</td><td>78.3%</td><td><span class="tag high">High</span></td></tr>
+            <tr><td>New Jersey (NJ)</td><td>9,262</td><td>8.7%</td><td><span class="tag high">High</span></td></tr>
+            <tr><td>Pennsylvania (PA)</td><td>2,820</td><td>2.7%</td><td><span class="tag med">Med</span></td></tr>
+            <tr><td>Florida (FL)</td><td>1,475</td><td>1.4%</td><td><span class="tag low">Low</span></td></tr>
+            <tr><td>Connecticut (CT)</td><td>1,398</td><td>1.3%</td><td><span class="tag low">Low</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Top Precinct Hotspots</h3>
+        <table>
+          <thead>
+            <tr><th>Precinct</th><th>Borough</th><th>Violations</th><th>Total Fines</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>19</td><td>Manhattan</td><td>4,821</td><td>$312,365</td></tr>
+            <tr><td>14</td><td>Manhattan</td><td>4,102</td><td>$287,140</td></tr>
+            <tr><td>13</td><td>Manhattan</td><td>3,876</td><td>$251,940</td></tr>
+            <tr><td>18</td><td>Manhattan</td><td>3,541</td><td>$230,165</td></tr>
+            <tr><td>70</td><td>Queens</td><td>2,987</td><td>$194,155</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Unpaid Violations by Borough</h3>
+        <table>
+          <thead>
+            <tr><th>Borough</th><th>Unpaid</th><th>Amount Owed</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Manhattan</td><td>30,948</td><td>$1,906,900</td></tr>
+            <tr><td>Queens</td><td>12,395</td><td>$685,885</td></tr>
+            <tr><td>Brooklyn</td><td>7,917</td><td>$460,565</td></tr>
+            <tr><td>Bronx</td><td>7,435</td><td>$413,775</td></tr>
+            <tr><td>Staten Island</td><td>1,139</td><td>$60,005</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Fine Category Breakdown</h3>
+        <table>
+          <thead>
+            <tr><th>Category</th><th>Fine Range</th><th>Tickets</th><th>Revenue</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="tag high">High</span></td><td>$150+</td><td>25,736</td><td>$4,503,800</td></tr>
+            <tr><td><span class="tag med">Medium</span></td><td>$100-149</td><td>18,420</td><td>$2,026,200</td></tr>
+            <tr><td><span class="tag low">Low</span></td><td>Under $100</td><td>34,008</td><td>$1,870,440</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div id="architecture" style="margin-bottom:28px">
+    <div class="section-title">System Architecture</div>
+
+    <div class="arch-flow">
+      <div class="arch-box">
+        <div class="arch-title">Internet</div>
+        <div class="arch-sub">User Access</div>
+      </div>
+      <div class="arch-arrow">&#8594;</div>
+      <div class="arch-box">
+        <div class="arch-title">S3 Bucket</div>
+        <div class="arch-sub">Static Dashboard</div>
+      </div>
+      <div class="arch-arrow">&#8594;</div>
+      <div class="arch-box">
+        <div class="arch-title">EC2 Instance</div>
+        <div class="arch-sub">Python Script<br>t3.micro</div>
+      </div>
+      <div class="arch-arrow">&#8594;</div>
+      <div class="arch-box">
+        <div class="arch-title">RDS MySQL</div>
+        <div class="arch-sub">78,164 rows<br>db.t3.micro</div>
+      </div>
+      <div class="arch-arrow">&#8594;</div>
+      <div class="arch-box">
+        <div class="arch-title">CloudWatch</div>
+        <div class="arch-sub">CPU + Storage<br>Alarms</div>
+      </div>
+    </div>
+    <div class="arch-note">All infrastructure provisioned automatically using Terraform — terraform apply builds everything with one command</div>
+
+    <br>
+    <div class="section-title">Tech Stack</div>
+    <div class="tech-grid">
+      <div class="tech-card oracle">
+        <div class="tech-name">Oracle Live SQL</div>
+        <div class="tech-desc">PL/SQL stored procedures, triggers, and cursors for automated violation and payment processing</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">MySQL / AWS RDS</div>
+        <div class="tech-desc">4-table normalized schema with 78,164 real NYC violation records on AWS RDS db.t3.micro</div>
+      </div>
+      <div class="tech-card python">
+        <div class="tech-name">Python</div>
+        <div class="tech-desc">Hotspot detection script on EC2. Connects to RDS, runs violation analysis and generates reports</div>
+      </div>
+      <div class="tech-card terraform">
+        <div class="tech-name">Terraform IaC</div>
+        <div class="tech-desc">Entire AWS environment — EC2, RDS, S3, security groups — provisioned with a single command</div>
+      </div>
+      <div class="tech-card cloudwatch">
+        <div class="tech-name">AWS CloudWatch</div>
+        <div class="tech-desc">CPU utilization alarms on EC2 and RDS with email alerts when thresholds exceed 80%</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">AWS S3</div>
+        <div class="tech-desc">Static website hosting for this dashboard with public bucket policy configured</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">AWS EC2</div>
+        <div class="tech-desc">Amazon Linux 2023 on t3.micro. SSH via key pair. Runs Python hotspot detection script</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Kaggle Dataset</div>
+        <div class="tech-desc">NYC Parking Violations FY2017 — real open government data, 10,000 sample rows loaded locally</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  NYC Parking Violations Monitoring System &nbsp;|&nbsp; Built by Palak Shah &nbsp;|&nbsp; AWS · Oracle · MySQL · Python · Terraform · CloudWatch
+</footer>
+
+</body>
+</html>
